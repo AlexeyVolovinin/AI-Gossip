@@ -1,0 +1,209 @@
+```markdown
+Стек: flutter 3.5.4 dart 2025 + http, markdown-latex
+pubspec.yaml
+name: ai_gossip
+description: "A new Flutter project."
+publish_to: 'none' # Prevents accidental publishing
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  flutter_markdown_latex: ^0.3.4
+  cupertino_icons: ^1.0.8
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Langar
+      fonts:
+Принцип работы отображения markdown-latex библиотеки (Сделать аналогично в приложении)
+import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_latex/flutter_markdown_latex.dart';
+import 'package:markdown/markdown.dart' as md;
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Markdown Latex Example',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  static const _text = r"""
+This is inline latex: $f(x) = \sum_{i=0}^{n} \frac{a_i}{1+x}$
+
+This is block level latex:
+
+$$
+c = \pm\sqrt{a^2 + b^2}
+$$
+
+This is inline latex with displayMode: $$f(x) = \sum_{i=0}^{n} \frac{a_i}{1+x}$$ and here is a very long text that should be in the same line.
+
+The relationship between the height and the side length of an equilateral triangle is:
+
+\[ \text{Height} = \frac{\sqrt{3}}{2} \times \text{Side Length} \]
+
+\[ \text{X} = \frac{1}{2} \times \text{Y} \times \text{Z} = \frac{1}{2} \times 9 \times \frac{\sqrt{3}}{2} \times 9 = \frac{81\sqrt{3}}{4} \]
+
+The basic form of the Taylor series is:
+
+\[f(x) = f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \frac{f'''(a)}{3!}(x-a)^3 + \cdots\]
+
+where \(f(x)\) is the function to be expanded, \(a\) is the expansion point, \(f'(a)\), \(f''(a)\), \(f'''(a)\), etc., are the first, second, third, and so on derivatives of the function at point \(a\), and \(n!\) denotes the factorial of \(n\).
+
+In particular, when \(a=0\), this expansion is called the Maclaurin series.
+
+""";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text('Latex Markdown Example'),
+      ),
+      body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Markdown(
+            selectable: true,
+            data: _text,
+            builders: {
+              'latex': LatexElementBuilder(
+                textStyle: const TextStyle(
+                  // color: Colors.blue,
+                  fontWeight: FontWeight.w100,
+                ),
+                textScaleFactor: 1.2,
+              ),
+            },
+            extensionSet: md.ExtensionSet(
+              [LatexBlockSyntax()],
+              [LatexInlineSyntax()],
+            ),
+          )), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+1. Реализовать дизайн чат бота с темой windows 11 с строкой ввода сообщения для ИИ. Выбором модели ИИ из списка
+MODELS = {
+    1: "gpt-4o",
+    2: "gpt-4o-mini",
+    3: "gemini-2-0-flash-thinking",
+    4: "claude-3.7-sonnet",
+    5: "deepseek-r1",
+    6: "grok-3-r1",
+    7: "evil"
+}
+2. Добавить заглушки в виде приложить файл (кнопка) - ввиде значка скрепки [ДЛЯ РАБОТАДАТЕЛЯ НЕ УКАЗЫВАТЬ]
+3. После отправки сообщения пользователя оно появляется в чате, отображается при помощи markdown-latex библиотеки
+4. Текст сообщения отправляется через написанный моду api.dart на сервер (Я ДАМ КОД ТЕБЕ)
+5. С сервера приходит сообщение которое нужно отобразить в чате с помощью markdown-latex библиотеки
+6. Добавить кнопку отправки. Кнопка enter просто переходит на новую строку в поле ввода
+7. Пользователь должен иметь возможность скопировать сообщение и выделить текст в чате (и своё и ответ нейросети)
+Вот код api.dart
+// lib/api.dart
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+const _baseUrl = 'https://flutter-tpg4.onrender.com';
+const _systemQuery = r"""
+[ИНСТРУКЦИИ ДЛЯ ОТВЕТА]
+1. Все ответы в Markdown
+2. Если инлайн формула то в $: $f(x) = \sum_{i=0}^{n} \frac{a_i}{1+x}$
+3. Если блоковая формула:
+$$
+c = \pm\sqrt{a^2 + b^2}
+$$
+4. Правильные переносы строк
+5. Код в блоках
+6. Язык ответа = язык запроса
+7. Обязательно исправлять ошибки
+""";
+
+Future<String> sendQuery(String userInput, String model) async {
+  final fullQuery = '$_systemQuery\n\n[ЗАПРОС]\n$userInput';
+  final response = await http.post(
+    Uri.parse(_baseUrl),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode({'input': fullQuery, 'model': model}),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Сервер вернул ${response.statusCode}');
+  }
+  
+  return utf8.decode(response.bodyBytes);
+}
+8. Нельзя допускать ошибки. Нужно писать код как проффесионал.
+window.flutterWebRenderer is now deprecated. Use engineInitializer.initializeEngine(config) instead. See: https://docs.flutter.dev/development/platform-integration/web/initialization ══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════ The following assertion was thrown during performResize(): Vertical viewport was given unbounded height. Viewports expand in the scrolling direction to fill their container. In this case, a vertical viewport was given an unlimited amount of vertical space in which to expand. This situation
+typically happens when a scrollable widget is nested inside another scrollable widget. If this widget is always nested in a scrollable widget there is no need to use a viewport because there will always be enough vertical space for the children. In this case, consider using a Column or Wrap instead. Otherwise, consider using a CustomScrollView to concatenate arbitrary slivers into a single scrollable
+The relevant error-causing widget was: ListView ListView:file:///D:/Users/tbeka/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_markdown-0.6.23/lib/src/widget.dart:536:12
+The following RenderObject was being processed when the exception was fired: RenderViewport#2ac61 NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE: needs compositing creator: Viewport ← IgnorePointer-[GlobalKey#dc794] ← Semantics ← Listener ← _GestureSemantics ← RawGestureDetector-[LabeledGlobalKey<RawGestureDetectorState>#c08a4] ← Listener ← _ScrollableScope ← _ScrollSemantics-[GlobalKey#02513] ← NotificationListener<ScrollMetricsNotification> ← RepaintBoundary ← CustomPaint-[GlobalKey#4ecce] ← ⋯ parentData: <none> (can use size) constraints: BoxConstraints(w=1420.0, 0.0<=h<=Infinity) size: MISSING axisDirection: down crossAxisDirection: right offset: ScrollPositionWithSingleContext#695f7(offset: 0.0, range: null..null, viewport: null, ScrollableState, AlwaysScrollableScrollPhysics -> ClampingScrollPhysics -> RangeMaintainingScrollPhysics, IdleScrollActivity#70bb1, ScrollDirection.idle) anchor: 0.0 This RenderObject had the following descendants (showing up to depth 5): center child: RenderSliverPadding#a353f NEEDS-LAYOUT NEEDS-PAINT NEEDS-COMPOSITING-BITS-UPDATE child: RenderSliverList#095fe NEEDS-LAYOUT NEEDS-PAINT
+9. Правильно отображать код в ```
+Для этого используем flutter_highlighting
+import 'package:flutter/material.dart';
+import 'package:flutter_highlighting/flutter_highlighting.dart';
+import 'package:flutter_highlighting/themes/github.dart';
+import 'package:highlighting/languages/dart.dart';
+
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final code = '''main() {
+  print("Hello, World!");
+}
+''';
+
+    return HighlightView(
+      // The original code to be highlighted
+      code,
+
+      // Specify language
+      // It is recommended to give it a value for performance
+      languageId: dart.id,
+
+      // Specify highlight theme
+      // All available themes are listed in `themes` folder
+      theme: githubTheme,
+
+      // Specify padding
+      padding: EdgeInsets.all(12),
+
+      // Specify text style
+      textStyle: TextStyle(
+        fontFamily: 'My awesome monospace font',
+        fontSize: 16,
+      ),
+    );
+  }
+}
+```
