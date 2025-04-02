@@ -1,16 +1,31 @@
 # ai_gossip
 
-A new Flutter project.
+Стоимость и сроки:**  
+- **Срок:** 12 дней (включая тестирование на Android/Web)  
+1. **Сложный UI:**  
+   - Тема Windows 11 → кастомные стили для AppBar, кнопок, полей ввода.  
+   - Фикс ошибок вёрстки (вложенные ScrollView → замена на CustomScrollView/Slivers).  
+1. **Интеграция моделей:**  
+   - Настройка выпадающего списка с динамическим обновлением (если MODELS изменятся).  
+   - Обработка ошибок API для каждой модели (таймауты, ретраи).  
+1. **Markdown + LaTeX:**  
+   - Кастомизация библиотеки `flutter_markdown_latex` под формулы с переносами.  
+   - Костыли для правильного отображения инлайн/блочных формул (Flutter плохо дружит с LaTeX).  
+1. **Подсветка кода:**  
+   - Интеграция `flutter_highlighting` + настройка тем под Windows 11.  
+   - Автоопределение языка в блоках кода (если не указан).  
 
-## Getting Started
+**Пример описания для работодателя:**  
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+> **Кроссплатформенный чат-бот с LaTeX-поддержкой**  
+>  
+> **Что сделано:**  
+> - Чат в стиле Windows 11 с возможностью выбора 7 AI-моделей.  
+> - Сообщения рендерятся как Markdown с формулами
+> - Код в ответах подсвечивается как в VSCode (тема GitHub + автоязык).  
+>  
+> **Фишки:**  
+> - Enter = новая строка, Ctrl+Enter = отправка.  
+> - История чата сохраняется даже после перезагрузки (Hive/SQLite).  
+> - Можно копировать части сообщений (даже внутри формул).  
+Поддержка: Android, Windows, Web
